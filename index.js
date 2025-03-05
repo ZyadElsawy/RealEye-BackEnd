@@ -36,6 +36,7 @@ process.on("SIGINT", () => {
 const handler = require("./middlewares/errorHandler");
 const authRoute = require("./routes/auth");
 const contactRoute = require("./routes/contact_us");
+const userRoute = require("./routes/users");
 
 //const checkToken = require("./middlewares/checkTokens");
 // middlewares
@@ -50,6 +51,7 @@ app.use(morgan("common"));
 
 app.use("/api/auth", authRoute);
 app.use("/api/contact", contactRoute);
+app.use("/api/users", userRoute);
 
 // error handling middleware
 app.use(handler);
