@@ -52,6 +52,36 @@ router.post("/register", async (req, res) => {
 });
 
 //LOGIN
+// router.post("/login", async (req, res) => {
+//   const data = req.body;
+//   const { error } = loginSchema.validate(data);
+//   if (error) return res.status(400).json({ message: error.details[0].message });
+
+//   try {
+//     const user = await User.findOne({ email: req.body.email });
+
+//     if (!user) return res.status(404).json("user not found");
+
+//     const valid_pass = await bcrypt.compare(req.body.password, user.password);
+
+//     if (!valid_pass)
+//       return res
+//         .status(400)
+//         .json({ success: "False", message: "incorrect email or password" });
+
+//     const token = createToken(user.id);
+
+//     const cookie = res.cookie("jwt", token, {
+//       maxAge: maxAge * 1000,
+//       path: "/",
+//     });
+
+//     res.status(200).json({ success: "true", userID: user._id });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// });
+
 router.post("/login", async (req, res) => {
   const data = req.body;
   const { error } = loginSchema.validate(data);
@@ -60,25 +90,31 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
 
-    if (!user) return res.status(404).json("user not found");
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const valid_pass = await bcrypt.compare(req.body.password, user.password);
 
     if (!valid_pass)
       return res
         .status(400)
-        .json({ success: "False", message: "incorrect email or password" });
+        .json({ success: false, message: "Incorrect email or password" });
 
+    // Generate JWT token
     const token = createToken(user.id);
 
-    const cookie = res.cookie("jwt", token, {
-      maxAge: maxAge * 1000,
-      path: "/",
-    });
+    // Set the token in an HTTP-only cookie
+    // res.cookie("jwt", token, {
+    //   httpOnly: true, // Prevent client-side JavaScript access
+    //   secure: process.env.NODE_ENV === "production", // Send only over HTTPS in production
+    //   maxAge: maxAge * 1000,
+    //   path: "/",
+    // });
 
-    res.status(200).json({ success: "true", userID: user._id });
+    // Send token in the response as well
+    res.status(200).json({ success: true, userID: user._id, token });
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
