@@ -49,4 +49,21 @@ router.get("/user", async (req, res) => {
   }
 });
 
+// get a user by user
+router.get("/:id", async (req, res) => {
+  // console.log("HERE3");
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User Not Found" });
+    }
+    res.status(200).json({
+      username: user.username,
+    });
+  } catch (err) {
+    console.log(err.message);
+    //res.status(500).json({ message: "this User Does Not Exist" });
+    res.status(500).json({ message: "something went wrong" });
+  }
+});
 module.exports = router;

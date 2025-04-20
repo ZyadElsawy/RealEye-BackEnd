@@ -37,6 +37,8 @@ const handler = require("./middlewares/errorHandler");
 const authRoute = require("./routes/auth");
 const contactRoute = require("./routes/contact_us");
 const userRoute = require("./routes/users");
+const commentRoute = require("./routes/comments");
+const postRoute = require("./routes/posts");
 
 //const checkToken = require("./middlewares/checkTokens");
 // middlewares
@@ -44,7 +46,14 @@ const userRoute = require("./routes/users");
 app.use(express.json());
 //app.use(handler());
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:4000",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Athorization"],
+    credentials: true,
+  })
+);
 
 app.use(cookieParser());
 app.use(morgan("common"));
@@ -52,6 +61,8 @@ app.use(morgan("common"));
 app.use("/api/auth", authRoute);
 app.use("/api/contact", contactRoute);
 app.use("/api/users", userRoute);
+app.use("/api/posts", postRoute);
+app.use("/api/comments", commentRoute);
 
 // error handling middleware
 app.use(handler);
