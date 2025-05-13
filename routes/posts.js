@@ -86,8 +86,36 @@ router.get("/", async (req, res) => {
     } catch (err) {
       return res.status(401).json({ error: "Invalid or expired token" });
     }
+    // get posts in recent to old order
+    const posts = await Post.find().sort({ createdAt: -1 });
 
-    const posts = await Post.find();
+    // const posts = await Post.find();
+    if (!posts.length) {
+      return res.status(404).json({ message: "No posts found" });
+    }
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
+// get all posts for logged in user
+router.get("/user", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+    const userID = decoded.id;
+    const posts = await Post.find({ userID });
     if (!posts.length) {
       return res.status(404).json({ message: "No posts found" });
     }
