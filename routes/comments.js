@@ -2,6 +2,8 @@ const router = require("express").Router();
 const Comment = require("../models/Comment");
 const jwt = require("jsonwebtoken");
 const { validateCommentData } = require("../middlewares/validateComment");
+const Post = require("../models/Post");
+
 // route to add comment to a specific post by a specific user
 
 router.post("/", async (req, res) => {
@@ -79,18 +81,34 @@ router.delete("/:id", async (req, res) => {
 
     const userID = decoded.id;
     const comment = await Comment.findById(req.params.id);
+
     if (!comment) {
       return res.status(404).json({ message: "Comment does not exist" });
     }
-    if (comment.author.toString() === userID) {
+
+    // Check if user is either the comment author or the post owner
+    const isCommentAuthor = comment.author.toString() === userID;
+    const post = await Post.findById(comment.postID);
+
+    if (!post) {
+      return res
+        .status(404)
+        .json({ message: "Associated post does not exist" });
+    }
+
+    const isPostOwner = post.userID.toString() === userID;
+
+    if (isCommentAuthor || isPostOwner) {
       await comment.deleteOne();
-      res
-        .status(200)
-        .json({ success: "true", message: "Deleted successfully" });
+      res.status(200).json({
+        success: "true",
+        message: "Comment deleted successfully",
+      });
     } else {
       res.status(403).json({
         success: "false",
-        message: "You can only delete your own comments :)",
+        message:
+          "You can only delete your own comments or comments on your posts",
       });
     }
   } catch (err) {
